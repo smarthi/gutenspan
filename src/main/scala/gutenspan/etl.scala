@@ -21,27 +21,55 @@ object ETL {
     
     val master = args(0)
 
+    val srcProp = new Properties
+    srcProp.put("infinispan.client.hotrod.server_list", master)
+    srcProp.put(InfinispanRDD.CacheName, "books")
+
+    val destProp = new Properties
+    destProp.put("infinispan.client.hotrod.server_list", master)
+    destProp.put(InfinispanRDD.CacheName, "words")
+    val config = new ConfigurationBuilder().withProperties(destProp).build()
+
     Logger.getLogger("org").setLevel(Level.WARN)
     val conf = new SparkConf().setAppName("etl")
     val sc = new SparkContext(conf)
 
-    val srcProp = new Properties
-    srcProp.put("infinispan.client.hotrod.server_list", master)
-    srcProp.put(InfinispanRDD.CacheName, "books")
-    val books = new InfinispanRDD[(String, Int), String](sc,
-                               configuration=srcProp)
+    val bookLines =
+      new InfinispanRDD[(String, Int), String](sc,
+                                               configuration=srcProp)
 
-    println(books.count() + " lines of text")
+    println(bookLines.count() + " lines of text")
 
-    val words = books.flatMap {
-      case ((filename, lineNumber), text) =>
-        val words = text.toLowerCase()
-          .filter { c => "abcdefghijklmnopqrstuvwxyz \t\n".contains(c) }
+    val filenameTitles = bookLines.filter {
+      case ((filename, lineNumber), line) =>
+        line.startsWith("Title:")
+    }.map {
+      case ((filename, lineNumber), line) =>
+        (filename, line.substring("Title: ".length))
+    }.collectAsMap()
+
+    println(filenameTitles.size() + " books")
+
+    for( (filename, title) <- filenameTitles) {
+      println("Book: " + title)
+    }
+
+    val bookTitles = bookLines.map {
+      case ((filename, lineNumber), line) =>
+        ((filenameTitles(filename), lineNumber), line)
+    }
+
+    val words = bookTitles.flatMap {
+      case ((title, lineNumber), line) =>
+        val words = line.toLowerCase()
+          .replaceAll("\t", " ")
+          .replaceAll("\n", " ")
+          .filter { c => "abcdefghijklmnopqrstuvwxyz ".contains(c) }
           .split(" ")
 
         words.map {
           w =>
-          ((filename, w), 1)
+          ((title, w), 1)
         }
     }
 
@@ -49,12 +77,8 @@ object ETL {
 
     val wordCounts = words.reduceByKey(_+_)
 
-    println(wordCounts.count() + " unique words")
+    println(wordCounts.count() + " unique words/book")
 
-    val destProp = new Properties
-    destProp.put("infinispan.client.hotrod.server_list", master)
-    destProp.put(InfinispanRDD.CacheName, "words")
-    val config = new ConfigurationBuilder().withProperties(destProp).build()
     println("creating cache manager")
     val remoteCacheManager = new RemoteCacheManager(config)
     println("getting cache")
