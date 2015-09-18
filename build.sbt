@@ -1,4 +1,4 @@
-name := "cee-spark-etl"
+name := "gutenspan"
 
 version := "0.1"
 
