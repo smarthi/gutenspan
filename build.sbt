@@ -18,7 +18,9 @@ libraryDependencies += "org.apache.spark" %% "spark-sql" % SPARK_VERSION % "prov
 
 libraryDependencies += "org.apache.spark" %% "spark-mllib" % SPARK_VERSION % "provided"
 
-libraryDependencies +=  "org.scalatest" %% "scalatest" % "2.2.4"
+libraryDependencies += "org.infinispan" %% "infinispan-spark" % "0.1"
+
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4"
 
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
