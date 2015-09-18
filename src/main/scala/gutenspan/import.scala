@@ -7,8 +7,6 @@ import java.util.Properties
 import java.io._
 
 object ImportBooks {
-  val namespace = "Book"
-
   def main(args: Array[String]) {
     if(args.length < 2) {
       println("Usage: ImportBooks master bookFile")
@@ -27,7 +25,7 @@ object ImportBooks {
     println("creating cache manager")
     val remoteCacheManager = new RemoteCacheManager(config)
     println("getting cache")
-    val cache = remoteCacheManager.getCache[(String, String, Int), String]
+    val cache = remoteCacheManager.getCache[(String, Int), String]("books")
     println("Houston, we have a cache!")
     
     var line = reader.readLine()
@@ -37,13 +35,13 @@ object ImportBooks {
         println(i + " " + line)
       }
 
-      cache.put((namespace, flname, i), line)
+      cache.put((flname, i), line)
 
       line = reader.readLine()
       i += 1
     }
 
-    println("Entres in cache: " + cache.size())
+    println("Entries in cache: " + cache.size())
     
     reader.close()
   }
