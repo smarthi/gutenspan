@@ -87,7 +87,7 @@ object ETL {
     
     println("Entres in cache before: " + cache.size())
 
-    words.writeToInfinispan(destProp)
+    wordCounts.writeToInfinispan(destProp)
 
     println("Entries in cache after: " + cache.size())
 
