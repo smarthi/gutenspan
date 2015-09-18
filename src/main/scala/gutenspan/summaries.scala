@@ -74,45 +74,6 @@ object Summarize {
       }
     }
     
-
-    /*
-    val bookTitles = bookLines.map {
-      case ((filename, lineNumber), line) =>
-        ((filenameTitles(filename), lineNumber), line)
-    }
-
-    val words = bookTitles.flatMap {
-      case ((title, lineNumber), line) =>
-        val words = line.toLowerCase()
-          .replaceAll("\t", " ")
-          .replaceAll("\n", " ")
-          .filter { c => "abcdefghijklmnopqrstuvwxyz ".contains(c) }
-          .split(" ")
-
-        words.map {
-          w =>
-          ((title, w), 1)
-        }
-    }
-
-    println(words.count() + " words")
-
-    val wordCounts = words.reduceByKey(_+_)
-
-    println(wordCounts.count() + " unique words/book")
-
-    println("creating cache manager")
-    val remoteCacheManager = new RemoteCacheManager(config)
-    println("getting cache")
-    val cache = remoteCacheManager.getCache[(String, String), Int]("words")
-    println("Houston, we have a cache!")
-    
-    println("Entres in cache before: " + cache.size())
-
-    words.writeToInfinispan(destProp)
-
-    println("Entries in cache after: " + cache.size())
-    */
     sc.stop()
   }
 }
